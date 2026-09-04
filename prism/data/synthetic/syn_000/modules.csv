@@ -1,0 +1,9 @@
+module,clock_domain,power_domain,rated_power_mw
+host_if_0,clk_host,vdd_core,15.177
+dma_fabric_1,clk_core,vdd_core,14.404
+ecc_engine_2,clk_core,vdd_core,22.143
+ch_ctrl_3,clk_nand,vdd_io,13.356
+sram_ctl_4,clk_core,vdd_core,12.167
+seq_core_5,clk_nand,vdd_io,9.447
+host_if_6,clk_host,vdd_core,9.617
+dma_fabric_7,clk_core,vdd_core,6.491

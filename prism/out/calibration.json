@@ -1,0 +1,12 @@
+{
+  "k_sheet": 4.308232997754898,
+  "k_bump": 43.08232997754898,
+  "bump_to_sheet_ratio": 10.0,
+  "n_free_parameters": 1,
+  "free_parameter": "k_sheet",
+  "k_bump_is_derived": "k_bump == 10.0 * k_sheet, held fixed by construction. The mesh has ONE free parameter, not two. Tying them is what makes U exactly proportional to 1/(k*r), so strap geometry is selected in closed form with no search (solver property 2).",
+  "r_target_median": 0.05773502691896258,
+  "reference_scenario": "seq_read",
+  "budget_v": 0.045000000000000005,
+  "note": "Two global technology constants for the whole corpus. A design's conductances are k * (strap_width_um / strap_pitch_um), both of which are published in design_stats.csv, so feature extraction reproduces them without touching the fine solve. S8 refits these two numbers against the real signoff map."
+}

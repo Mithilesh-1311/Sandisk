@@ -1,0 +1,2 @@
+design_id,config,hash,cells,flops,xor_cells,chip_area_um2,seq_area_um2,seq_pct,lint_rc,ts_utc,die_w_um,die_h_um,vdd_v,clock_period_ns,core_util,bump_pitch_um,strap_pitch_um,strap_width_um,pdn_layers
+syn_003,cfg_syn_3,056e3ae6e12d,156686,92182,1335,372912.68,219394.193,58.83,1,2026-09-03T00:00:00Z,776.306,753.789,0.9,2.748,0.637,200.0,12.0,1.6,M4-M7

@@ -1,0 +1,7 @@
+{
+  "congestion_thinning_max": 0.25,
+  "macro_edge_degradation": 0.22,
+  "macro_edge_radius_tiles": 2,
+  "lognormal_sigma": 0.6,
+  "justification": "congestion_thinning_max=0.25: mid-range of the 10-40% spec band, reflects routing congestion thinning straps under high local placement utilisation. macro_edge_degradation=0.22: mid-range of the 15-30% spec band, models via-array degradation within 2 fine tiles of a hard macro boundary. lognormal_sigma=0.6: per-instance current spread within a tile. The draw is mean-normalised so total power is UNCHANGED -- this redistributes current, it does not add any."
+}

@@ -1,0 +1,35 @@
+grid:
+  nx_fine: 96
+  ny_fine: 96
+  nx_coarse: 24            # fine must be an integer multiple of coarse
+  ny_coarse: 24
+electrical:
+  vdd: 0.90                # V, nangate45
+  ir_budget_frac: 0.05     # 45 mV budget at 0.9 V
+  sheet_cond: null         # set by solver.calibrate()
+  bump_cond: null
+corpus:
+  n_designs: 14
+  seed: 0
+scenarios:                 # must sum to 1.0
+  idle:          {weight: 0.30}
+  seq_read:      {weight: 0.25}
+  seq_write:     {weight: 0.15}
+  rand_read_4k:  {weight: 0.15}
+  gc_compact:    {weight: 0.10}
+  ecc_recover:   {weight: 0.05}
+validation:
+  n_holdout_designs: 3
+  n_calib_designs: 3
+  n_folds: 5
+  seeds: [0, 1, 2, 3, 4]
+  n_bootstrap: 1000
+  target_coverage: 0.80
+model:
+  max_iter: 400
+  learning_rate: 0.06
+  max_leaf_nodes: 31
+  min_samples_leaf: 20
+  l2_regularization: 1.0
+  early_stopping: true
+  validation_fraction: 0.15

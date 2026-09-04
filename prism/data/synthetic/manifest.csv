@@ -1,0 +1,15 @@
+design_id,corpus,path,n_scenarios,n_instances,source
+syn_000,synthetic,syn_000,6,155652,synthetic
+syn_001,synthetic,syn_001,6,100332,synthetic
+syn_002,synthetic,syn_002,6,106879,synthetic
+syn_003,synthetic,syn_003,6,156688,synthetic
+syn_004,synthetic,syn_004,6,627169,synthetic
+syn_005,synthetic,syn_005,6,52385,synthetic
+syn_006,synthetic,syn_006,6,489835,synthetic
+syn_007,synthetic,syn_007,6,32238,synthetic
+syn_008,synthetic,syn_008,6,459123,synthetic
+syn_009,synthetic,syn_009,6,25878,synthetic
+syn_010,synthetic,syn_010,6,326709,synthetic
+syn_011,synthetic,syn_011,6,45584,synthetic
+syn_012,synthetic,syn_012,6,41786,synthetic
+syn_013,synthetic,syn_013,6,333732,synthetic
