@@ -377,10 +377,13 @@ def coarse_solver_from_design(design, cfg: dict, k_sheet: float, k_bump: float) 
     bump_mask = mult > 0
 
     # Planned strap density, averaged fine -> coarse
-    sp = design.strap_planned
+    # NB: named `straps`, not `sp` — `sp` is scipy.sparse, used a few lines
+    # below for the bump-multiplicity term.  Real ORFS designs have several
+    # bumps per coarse tile, so that branch is live and the shadow was fatal.
+    straps = design.strap_planned
     planned_fine = np.zeros((ny_f, nx_f), dtype=np.float64)
-    planned_fine[sp["fy"].values.astype(int), sp["fx"].values.astype(int)] = (
-        sp["density"].values
+    planned_fine[straps["fy"].values.astype(int), straps["fx"].values.astype(int)] = (
+        straps["density"].values
     )
     planned_coarse = planned_fine.reshape(ny_c, ratio, nx_c, ratio).mean(axis=(1, 3))
 

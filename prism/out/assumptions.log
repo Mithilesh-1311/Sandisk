@@ -1,0 +1,296 @@
+[2026-09-04T15:04:28Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:04:28Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:04:28Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:04:29Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:04:29Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:04:30Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:04:30Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:04:31Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:07:21Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:07:21Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:07:21Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:07:22Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:07:22Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:07:22Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:07:23Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:07:23Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:08:40Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:08:40Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:08:40Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:08:41Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:08:41Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:08:42Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:08:43Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:08:44Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:09:37Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:09:37Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:09:37Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:09:38Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:09:38Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:09:39Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:09:39Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:09:40Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:41:31Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:41:32Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:41:32Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:41:32Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:41:33Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:41:33Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:41:34Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:41:35Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:42:42Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:42:42Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:42:43Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:42:43Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:42:45Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:42:46Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:42:46Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:42:47Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:43:57Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:43:57Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:43:57Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:43:58Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:43:58Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:43:58Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:43:59Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:43:59Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:47:47Z] orfs_ibex
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 16 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:47:47Z] orfs_gcd
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+[2026-09-04T15:47:48Z] orfs_ssd_ctrl_cfg_small
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 29 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:47:48Z] orfs_ssd_ctrl_cfg_run_01_p12
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 6.00 um as the median nearest-neighbour spacing of the 73 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:47:48Z] orfs_ssd_ctrl_cfg_run_02_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:47:49Z] orfs_ssd_ctrl_cfg_run_03_p24
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 12.00 um as the median nearest-neighbour spacing of the 37 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:47:49Z] orfs_ssd_ctrl_cfg_run_04_p16
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 8.00 um as the median nearest-neighbour spacing of the 55 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.
+[2026-09-04T15:47:50Z] orfs_ssd_ctrl_cfg_mid
+    (a) vdd: design_stats.vdd_v = 1.100 V, config/default.yaml says 0.900 V. Using the per-design value. IR budget = 0.050 * 1.100 = 55.0 mV, not 45.0 mV.
+    (b) bump_pitch_um absent in design_stats. Derived 15.00 um as the median nearest-neighbour spacing of the 59 bumps in bumps.csv. Not imputed.
+    (c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and top_dmacro takes the die-diagonal sentinel 135.76 fine tiles. Both finite; no NaN, no inf.
+    (d) activity is MEASURED, not assumed: out/activity/toggle_rates.csv covers 5 of 5 modules over scenarios ['ecc_recover', 'gc_compact', 'idle', 'seq_read', 'seq_write']. 25 (scenario, module) activity values come from RTL toggle counts normalised by each module's own peak (0 differed from the assumed table by >1e-4). Scenarios ['rand_read_4k'] have no simulation and keep the assumed _ACTIVITY_TABLE multipliers.

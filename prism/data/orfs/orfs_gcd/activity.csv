@@ -1,0 +1,7 @@
+scenario,module,activity,mission_weight
+idle,top,0.0417,0.3
+seq_read,top,0.6417,0.25
+seq_write,top,0.7917,0.15
+rand_read_4k,top,0.6417,0.15
+gc_compact,top,0.6667,0.1
+ecc_recover,top,0.3333,0.05

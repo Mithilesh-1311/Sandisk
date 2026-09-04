@@ -1,0 +1,2 @@
+design_id,config,hash,cells,flops,xor_cells,chip_area_um2,seq_area_um2,seq_pct,lint_rc,ts_utc,die_w_um,die_h_um,vdd_v,clock_period_ns,core_util,bump_pitch_um,strap_pitch_um,strap_width_um,pdn_layers
+orfs_ssd_ctrl_cfg_mid,orfs_ssd_ctrl_cfg_mid,79f3b000d8fb,297102,32859,493,775667.704,149692.564,19.3,0,2026-09-04T10:28:58Z,889.085,889.085,1.1,1.0,0.359,nan,30.0,1.4,M1-M4-M7

@@ -1,0 +1,9 @@
+design_id,corpus,path,n_scenarios,n_instances,source
+orfs_ibex,orfs,orfs_ibex,6,31761,orfs
+orfs_gcd,orfs,orfs_gcd,6,986,orfs
+orfs_ssd_ctrl_cfg_small,orfs,orfs_ssd_ctrl_cfg_small,6,71251,orfs
+orfs_ssd_ctrl_cfg_run_01_p12,orfs,orfs_ssd_ctrl_cfg_run_01_p12,6,71250,orfs
+orfs_ssd_ctrl_cfg_run_02_p24,orfs,orfs_ssd_ctrl_cfg_run_02_p24,6,71250,orfs
+orfs_ssd_ctrl_cfg_run_03_p24,orfs,orfs_ssd_ctrl_cfg_run_03_p24,6,73493,orfs
+orfs_ssd_ctrl_cfg_run_04_p16,orfs,orfs_ssd_ctrl_cfg_run_04_p16,6,71251,orfs
+orfs_ssd_ctrl_cfg_mid,orfs,orfs_ssd_ctrl_cfg_mid,6,297102,orfs

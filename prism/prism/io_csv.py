@@ -58,6 +58,18 @@ class Design:
     # optional
     toggle: Optional[pd.DataFrame] = None
 
+    # Resolved by design.from_csv() at load time (S8).  On synthetic data these
+    # simply echo the CSVs; on real ORFS data they carry the per-design supply
+    # voltage, the budget that follows from it, a bump pitch measured from the
+    # bump array when the header field is absent, and whether the scenario
+    # activity is MEASURED from RTL toggle counts or assumed from the table.
+    vdd_v: Optional[float] = None
+    budget_v: Optional[float] = None
+    bump_pitch_um: Optional[float] = None
+    macro_sentinel_tiles: Optional[float] = None
+    activity_source: str = "assumed"
+    assumptions: List[str] = field(default_factory=list)
+
 
 # ---------------------------------------------------------------------------
 # Required files and columns
@@ -386,7 +398,7 @@ def load_design(design_dir: str) -> Design:
     if toggle_path is not None:
         toggle = _read_csv(toggle_path)
 
-    return Design(
+    design = Design(
         design_id=design_id,
         design_dir=str(d),
         stats=stats,
@@ -400,6 +412,12 @@ def load_design(design_dir: str) -> Design:
         irmap=_load("irmap.csv"),
         toggle=toggle,
     )
+
+    # Every load goes through the S8 adapter, so real and synthetic designs
+    # reach features.py in exactly the same state.  Imported here rather than
+    # at module scope: design.py imports this module.
+    from prism.design import from_csv
+    return from_csv(design, load_config())
 
 
 # ---------------------------------------------------------------------------

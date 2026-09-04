@@ -1,0 +1,2 @@
+module,clock_domain,power_domain,rated_power_mw
+top,clk_core,vdd_core,6.37695

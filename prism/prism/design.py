@@ -22,6 +22,7 @@ are what S8 fits against the signoff map.
 
 from __future__ import annotations
 
+import datetime
 import json
 import pathlib
 from typing import Dict, List, Optional, Tuple
@@ -737,6 +738,209 @@ def build_corpus(cfg: dict) -> None:
     print(f"\nCorpus written to {data_dir}/  ({len(manifest_records)} designs)")
     print("Mesh constants  -> out/calibration.json")
     print("Divergence      -> out/generator_params.json")
+
+
+# ---------------------------------------------------------------------------
+# S8: real-data adapter
+# ---------------------------------------------------------------------------
+#
+# Real ORFS artefacts differ from the synthetic corpus in four specific ways.
+# Each is resolved here, once, at load time, and each resolution is written to
+# out/assumptions.log so that no number downstream rests on an unrecorded
+# assumption.  Synthetic designs hit none of these branches and log nothing.
+#
+#   (a) vdd_v is per design (1.1 V on nangate45 as-run), not the 0.90 V in
+#       config/default.yaml.  The IR budget is ir_budget_frac * vdd_v.
+#   (b) bump_pitch_um can be absent; it is then derived from the bumps.csv
+#       coordinates, never imputed from a constant.
+#   (c) macros.csv can be empty; top_macro_frac is 0 and top_dmacro takes the
+#       die-diagonal sentinel.  Neither may be NaN or inf.
+#   (d) out/activity/toggle_rates.csv, when its modules match the design's,
+#       supplies MEASURED per-module activity that supersedes the assumed
+#       _ACTIVITY_TABLE multipliers.
+# ---------------------------------------------------------------------------
+
+_ASSUMPTION_LOG = pathlib.Path("out") / "assumptions.log"
+_TOGGLE_RATES = pathlib.Path("out") / "activity" / "toggle_rates.csv"
+
+# RTL-simulation scenario -> team scenario.  peak_concurrent has no team
+# counterpart and rand_read_4k has no simulation, so that one scenario stays
+# on the assumed multipliers and is logged as such.
+_SIM_TO_SCENARIO = {
+    "idle_retention": "idle",
+    "host_read_stream": "seq_read",
+    "host_write_burst": "seq_write",
+    "gc_compaction": "gc_compact",
+    "ecc_decode_heavy": "ecc_recover",
+}
+
+# One block per design per process; repeated loads must not multiply the log.
+_LOGGED_DESIGNS: set = set()
+
+
+def _derive_bump_pitch(bumps: pd.DataFrame) -> Optional[float]:
+    """Median nearest-neighbour spacing of the bump array, in microns.
+
+    The bump array is what the mesh actually sees, so measuring it is strictly
+    better than trusting a header field -- and it is the only honest option
+    when that field is absent.
+    """
+    if len(bumps) < 2:
+        return None
+    xy = np.c_[bumps["x_um"].to_numpy(dtype=float),
+               bumps["y_um"].to_numpy(dtype=float)]
+    from scipy.spatial import cKDTree
+    d, _ = cKDTree(xy).query(xy, k=2)
+    nn = d[:, 1]
+    nn = nn[np.isfinite(nn) & (nn > 0)]
+    if nn.size == 0:
+        return None
+    return float(np.median(nn))
+
+
+def _measured_activity() -> Dict[str, Dict[str, float]]:
+    """{scenario: {module: activity}} from the RTL toggle counts, or {}.
+
+    A module's activity is its toggle rate normalised by its own peak across
+    the simulated scenarios, so the result is a switching duty in [0, 1] that
+    is comparable to the assumed multipliers it replaces.
+    """
+    if not _TOGGLE_RATES.exists():
+        return {}
+    tr = pd.read_csv(_TOGGLE_RATES)
+    need = {"scenario", "module", "toggles_per_us"}
+    if not need.issubset(tr.columns):
+        return {}
+    out: Dict[str, Dict[str, float]] = {}
+    for mod, sub in tr.groupby("module"):
+        rates = dict(zip(sub["scenario"], sub["toggles_per_us"].astype(float)))
+        peak = max(rates.values()) if rates else 0.0
+        if peak <= 0:
+            continue
+        for sim_scn, team_scn in _SIM_TO_SCENARIO.items():
+            if sim_scn in rates:
+                out.setdefault(team_scn, {})[str(mod)] = float(
+                    min(1.0, max(0.0, rates[sim_scn] / peak))
+                )
+    return out
+
+
+def _write_assumptions(design_id: str, notes: List[str]) -> None:
+    if not notes or design_id in _LOGGED_DESIGNS:
+        return
+    _LOGGED_DESIGNS.add(design_id)
+    _ASSUMPTION_LOG.parent.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with open(_ASSUMPTION_LOG, "a", encoding="utf-8") as f:
+        f.write("[" + stamp + "] " + str(design_id) + "\n")
+        for n in notes:
+            f.write("    " + n + "\n")
+
+
+def from_csv(csv_design: Design, cfg: dict) -> Design:
+    """Resolve the four real-data ambiguities on a freshly loaded Design.
+
+    Takes the container io_csv.load_design() builds from the CSVs and returns
+    it with vdd, IR budget, bump pitch, the empty-macros sentinel and the
+    activity source resolved and recorded.  The physics path
+    (scenario_currents, coarse_solver_from_design, features.design_features)
+    then runs identically on synthetic and real data.
+    """
+    notes: List[str] = []
+    stats = csv_design.stats
+    ny_f, nx_f = cfg["grid"]["ny_fine"], cfg["grid"]["nx_fine"]
+
+    # --- (a) vdd and the IR budget: per design, never the global config ---
+    vdd = float(stats["vdd_v"].iloc[0])
+    frac = float(cfg["electrical"]["ir_budget_frac"])
+    budget_v = frac * vdd
+    cfg_vdd = float(cfg["electrical"]["vdd"])
+    if abs(vdd - cfg_vdd) > 1e-9:
+        notes.append(
+            "(a) vdd: design_stats.vdd_v = %.3f V, config/default.yaml says "
+            "%.3f V. Using the per-design value. IR budget = %.3f * %.3f = "
+            "%.1f mV, not %.1f mV."
+            % (vdd, cfg_vdd, frac, vdd, budget_v * 1000, frac * cfg_vdd * 1000)
+        )
+
+    # --- (b) bump pitch: measure the array, do not impute a constant ---
+    bp_raw = stats["bump_pitch_um"].iloc[0]
+    try:
+        bp = float(bp_raw)
+    except (TypeError, ValueError):
+        bp = float("nan")
+    if not np.isfinite(bp):
+        derived = _derive_bump_pitch(csv_design.bumps)
+        if derived is None:
+            notes.append(
+                "(b) bump_pitch_um is absent and cannot be derived: %d bump(s). "
+                "Left undefined; nothing in the feature or solver path reads it."
+                % len(csv_design.bumps)
+            )
+            bp = None
+        else:
+            bp = derived
+            notes.append(
+                "(b) bump_pitch_um absent in design_stats. Derived %.2f um as "
+                "the median nearest-neighbour spacing of the %d bumps in "
+                "bumps.csv. Not imputed."
+                % (bp, len(csv_design.bumps))
+            )
+            stats.loc[stats.index[0], "bump_pitch_um"] = bp
+
+    # --- (c) macros: an empty file is a fact about the design, not a gap ---
+    macro_sentinel = float(np.hypot(ny_f, nx_f))
+    if len(csv_design.macros) == 0:
+        notes.append(
+            "(c) macros.csv has 0 rows. top_macro_frac = 0 for every tile and "
+            "top_dmacro takes the die-diagonal sentinel %.2f fine tiles. Both "
+            "finite; no NaN, no inf." % macro_sentinel
+        )
+
+    # --- (d) measured activity beats assumed multipliers ---
+    activity_source = "assumed"
+    measured = _measured_activity()
+    if measured:
+        act = csv_design.activity
+        design_mods = set(act["module"].astype(str))
+        covered = {m for scn in measured.values() for m in scn} & design_mods
+        if covered:
+            replaced = 0
+            changed = 0
+            new_vals = act["activity"].to_numpy(dtype=float).copy()
+            for i, (scn, mod) in enumerate(zip(act["scenario"].astype(str),
+                                               act["module"].astype(str))):
+                if mod in measured.get(scn, {}):
+                    v = measured[scn][mod]
+                    replaced += 1
+                    if abs(v - new_vals[i]) > 1e-4:
+                        changed += 1
+                    new_vals[i] = v
+            act["activity"] = new_vals
+            activity_source = "measured"
+            scn_all = set(act["scenario"].astype(str))
+            scn_measured = sorted(set(measured) & scn_all)
+            scn_assumed = sorted(scn_all - set(scn_measured))
+            notes.append(
+                "(d) activity is MEASURED, not assumed: "
+                "out/activity/toggle_rates.csv covers %d of %d modules over "
+                "scenarios %s. %d (scenario, module) activity values come from "
+                "RTL toggle counts normalised by each module's own peak (%d "
+                "differed from the assumed table by >1e-4). Scenarios %s have "
+                "no simulation and keep the assumed _ACTIVITY_TABLE multipliers."
+                % (len(covered), len(design_mods), scn_measured, replaced,
+                   changed, scn_assumed)
+            )
+
+    csv_design.vdd_v = vdd
+    csv_design.budget_v = budget_v
+    csv_design.bump_pitch_um = bp
+    csv_design.macro_sentinel_tiles = macro_sentinel
+    csv_design.activity_source = activity_source
+    csv_design.assumptions = notes
+
+    _write_assumptions(csv_design.design_id, notes)
+    return csv_design
 
 
 def load_calibration() -> Tuple[float, float]:

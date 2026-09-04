@@ -1,0 +1,2 @@
+design_id,config,hash,cells,flops,xor_cells,chip_area_um2,seq_area_um2,seq_pct,lint_rc,ts_utc,die_w_um,die_h_um,vdd_v,clock_period_ns,core_util,bump_pitch_um,strap_pitch_um,strap_width_um,pdn_layers
+orfs_gcd,orfs_gcd,232c93d82906,986,35,12,1076.768,158.27,14.7,0,2026-09-04T06:53:04Z,35.755,35.755,1.1,1.0,0.88,200.0,30.0,1.4,M1-M4-M7
