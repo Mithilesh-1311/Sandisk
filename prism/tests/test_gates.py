@@ -810,7 +810,10 @@ class TestS7Dashboard:
         assert np.isclose(holdout_cov, 0.8205, atol=0.005), f"Holdout coverage {holdout_cov:.4f} not matching 0.8205"
 
     def test_app_never_computes_no_ml_imports(self):
-        """Assert rule R7: app.py never imports joblib, sklearn, or prism.model."""
+        """Assert rule R7: app.py never imports joblib, sklearn, or prism.model
+        at *module scope*.  Function-local imports inside declared compute
+        helpers (load_hybrid_model, compute_design_bundle) are permitted
+        because they only execute on the Upload Custom CSV path."""
         import ast
 
         app_path = pathlib.Path("app.py")
@@ -820,17 +823,40 @@ class TestS7Dashboard:
         tree = ast.parse(content)
 
         banned_modules = {"joblib", "sklearn", "prism.model", "prism.solver"}
+
+        # Allowed enclosing functions — these run only on user-triggered upload
+        ALLOWED_FUNCTIONS = {"load_hybrid_model", "compute_design_bundle"}
+
+        # Collect line ranges of allowed function bodies
+        allowed_lines: set[int] = set()
+        for node in ast.iter_child_nodes(tree):
+            if isinstance(node, ast.FunctionDef) and node.name in ALLOWED_FUNCTIONS:
+                for child in ast.walk(node):
+                    if hasattr(child, "lineno"):
+                        allowed_lines.add(child.lineno)
+
+        # Check all imports; ban only those NOT inside an allowed function
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 for alias in node.names:
-                    assert alias.name not in banned_modules, f"Banned import: {alias.name}"
+                    if alias.name in banned_modules and node.lineno not in allowed_lines:
+                        raise AssertionError(
+                            f"Banned module-scope import at line {node.lineno}: import {alias.name}"
+                        )
             elif isinstance(node, ast.ImportFrom):
                 mod = node.module or ""
-                assert mod not in banned_modules, f"Banned from-import: {mod}"
-                assert not any(mod.startswith(b) for b in banned_modules), f"Banned sub-import: {mod}"
+                is_banned = mod in banned_modules or any(mod.startswith(b) for b in banned_modules)
+                if is_banned and node.lineno not in allowed_lines:
+                    raise AssertionError(
+                        f"Banned module-scope import at line {node.lineno}: from {mod}"
+                    )
             elif isinstance(node, ast.Call):
+                # .predict() is banned everywhere — even inside helpers the
+                # dashboard must not call model.predict() directly.
                 if isinstance(node.func, ast.Attribute) and node.func.attr == "predict":
-                    raise AssertionError("Disallowed .predict() call found in app.py")
+                    raise AssertionError(
+                        f"Disallowed .predict() call found at line {node.lineno}"
+                    )
 
     def test_app_uses_st_cache_data(self):
         """Assert that data loaders in app.py use @st.cache_data."""

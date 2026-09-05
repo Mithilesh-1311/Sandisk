@@ -1,18 +1,32 @@
 """app.py — Streamlit Frontend for PRISM (S7).
 
-R7 COMPLIANCE: THE DASHBOARD NEVER COMPUTES.
-No model loading. No .predict(). No solving. No joblib import.
-Pure static delivery reading precomputed artifacts from out/ and figures/.
-All file loads decorated with @st.cache_data for instant launch (<3s).
+R7 COMPLIANCE, with exactly one declared exception.
+
+The four bundled-data pages — Predict, Validate, Scenarios, Findings — never
+compute.  No model loading, no .predict(), no solving.  Pure static delivery
+reading precomputed artifacts from out/ and figures/, every load decorated
+with @st.cache_data for instant launch (<3s).
+
+THE EXCEPTION: "Upload Custom CSV" -> design bundle.  An uploaded design has
+no precomputed artifact by definition, so that one path runs the real
+pipeline (io_csv.load_design -> features.design_features ->
+models/hybrid.joblib -> the shipped additive conformal band).  It is labelled
+"Custom design — computes on upload" wherever it renders, so the zero-compute
+guarantee on the other four pages stays true and stays explicit.
 """
 
 from __future__ import annotations
 
+import io
+import json
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
+import zipfile
 from typing import Dict, Tuple
 
 import numpy as np
@@ -137,13 +151,17 @@ def pipeline_step(steps: list):
     return html
 
 
-def ai_insight_panel(title: str, content: str, confidence: str = "", severity: str = "nominal"):
-    """Render the AI insight centerpiece panel."""
+def ai_insight_panel(title: str, content: str, stat: str = "", severity: str = "nominal"):
+    """Render the analysis centerpiece panel.
+
+    FIX 3: there is no `confidence` argument any more.  The old one rendered
+    "AI Confidence: 97%" from `100 - mae * 5`, a number nothing in this repo
+    measures.  `stat` takes its place in the header and must be a quantity
+    computed from the data on screen.
+    """
     severity_class = f"ai-severity-{severity}"
-    conf_html = ""
-    if confidence:
-        conf_html = f'<div class="ai-confidence">AI Confidence: <strong>{confidence}</strong></div>'
-    return f'<div class="ai-panel {severity_class} fade-in"><div class="ai-header"><div class="ai-badge"><span class="ai-pulse"></span>AI ANALYSIS</div>{conf_html}</div><div class="ai-title">{title}</div><div class="ai-content">{content}</div></div>'
+    stat_html = f'<div class="ai-confidence">{stat}</div>' if stat else ""
+    return f'<div class="ai-panel {severity_class} fade-in"><div class="ai-header"><div class="ai-badge"><span class="ai-pulse"></span>ANALYSIS</div>{stat_html}</div><div class="ai-title">{title}</div><div class="ai-content">{content}</div></div>'
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -182,12 +200,194 @@ def load_findings() -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# Custom Design Upload — THE ONE PLACE THIS APP COMPUTES
+#
+# R7 exception, deliberate and labelled.  Pages Predict/Validate/Scenarios/
+# Findings on bundled data remain pure static delivery.  A design-bundle
+# upload has no precomputed artifact by definition, so this path runs the
+# real pipeline: io_csv.load_design -> features.design_features ->
+# models/hybrid.joblib -> the shipped additive conformal band.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# The nine CSVs of docs/DATA_SCHEMA.md.
+DESIGN_BUNDLE_FILES = [
+    "design_stats.csv", "modules.csv", "macros.csv", "instances.csv",
+    "bumps.csv", "strap_planned.csv", "activity.csv", "paths.csv", "irmap.csv",
+]
+
+# Columns that make an upload a mode B predictions table.
+PRED_TABLE_REQUIRED = ["design", "scenario", "tile_id", "pred_v", "label_v"]
+
+
+@st.cache_resource
+def load_hybrid_model():
+    """models/hybrid.joblib — the frozen hybrid estimator + its conformal Q."""
+    import joblib
+    return joblib.load("models/hybrid.joblib")
+
+
+@st.cache_data
+def load_model_manifest() -> dict:
+    """models/manifest.json — carries the train/calib/holdout partitions."""
+    with open("models/manifest.json", "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def holdout_picp_pct(val_df: pd.DataFrame) -> float:
+    """The measured holdout PICP of the hybrid variant, in percent."""
+    row = val_df[(val_df["variant"] == "hybrid") & (val_df["metric"] == "picp")]
+    if len(row) == 0:
+        return float("nan")
+    return float(row.iloc[0]["mean"]) * 100.0
+
+
+def design_partition(design: str, frame: pd.DataFrame) -> str:
+    """Which partition a design sits in: train, calib, holdout, or uploaded."""
+    if "partition" in frame.columns:
+        hit = frame.loc[frame["design"] == design, "partition"]
+        if len(hit) > 0 and pd.notna(hit.iloc[0]):
+            return str(hit.iloc[0])
+    try:
+        parts = load_model_manifest().get("partitions", {})
+    except Exception:
+        return "unknown"
+    for key, name in (("canonical_train", "train"), ("canonical_calib", "calib"),
+                      ("holdout", "holdout")):
+        if design in parts.get(key, []):
+            return name
+    return "unknown"
+
+
+def _materialise_upload(uploaded_files, workdir: pathlib.Path):
+    """Flatten every uploaded CSV (and every CSV inside every uploaded zip)
+    into one flat directory.
+
+    Flattening is what makes "a zip with the CSVs nested one folder deep"
+    work without a special case: only the basename is kept, so
+    my_design/design_stats.csv and design_stats.csv land identically.
+
+    Returns (basenames_written, errors).
+    """
+    workdir.mkdir(parents=True, exist_ok=True)
+    written = {}                      # basename -> which upload supplied it
+    errors = []
+
+    def _place(basename, data, origin):
+        if basename in written:
+            errors.append(
+                f"Duplicate {basename}: supplied by both '{written[basename]}' and "
+                f"'{origin}'. Upload one design at a time."
+            )
+            return
+        written[basename] = origin
+        (workdir / basename).write_bytes(data)
+
+    for uf in uploaded_files:
+        raw = uf.getvalue()
+        if uf.name.lower().endswith(".zip"):
+            try:
+                with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+                    members = [
+                        m for m in zf.namelist()
+                        if not m.endswith("/")
+                        and "__MACOSX" not in m
+                        and not pathlib.Path(m).name.startswith(".")
+                        and (m.lower().endswith(".csv") or m.lower().endswith(".csv.gz"))
+                    ]
+                    if not members:
+                        errors.append(f"{uf.name}: zip contains no CSV files.")
+                    for m in members:
+                        _place(pathlib.Path(m).name, zf.read(m), uf.name)
+            except zipfile.BadZipFile:
+                errors.append(f"{uf.name}: not a readable zip archive.")
+        else:
+            _place(pathlib.Path(uf.name).name, raw, uf.name)
+
+    return sorted(written), errors
+
+
+def _looks_like_design_bundle(basenames) -> bool:
+    """Mode A trigger: design_stats.csv AND instances.csv are both present."""
+    have = set(basenames)
+
+    def _present(name):
+        return name in have or (name + ".gz") in have
+
+    return _present("design_stats.csv") and _present("instances.csv")
+
+
+def compute_design_bundle(design_dir: str) -> pd.DataFrame:
+    """Run the real pipeline over one uploaded design directory.
+
+    Mirrors scripts/orfs_transfer.py's `as_trained` pass exactly: the shipped
+    k_sheet, the shipped hybrid weights, the shipped additive conformal band.
+    Nothing is refitted to the upload.
+
+    Returns a frame in the out/predictions.csv shape, so every downstream
+    render path is identical to the bundled pages.
+    """
+    from prism.audit import leakage_trap, unstash_irmap
+    from prism.design import _SCENARIOS, load_calibration
+    from prism.features import _static_tile_features, add_labels, design_features
+    from prism.io_csv import load_design
+    from prism.model import apply_conformal, predict_variant
+
+    cfg_local = load_config()
+    nx_c = cfg_local["grid"]["nx_coarse"]
+    k_sheet, k_bump = load_calibration()
+
+    # Feature extraction runs under the leakage trap, exactly as it does in
+    # features.build_feature_table(); labels are attached outside it.
+    with leakage_trap():
+        design = load_design(design_dir)
+        static = _static_tile_features(design, cfg_local, k_sheet, k_bump)
+        fdf = pd.concat(
+            [design_features(design, scn, cfg_local, static=static,
+                             k_sheet=k_sheet, k_bump=k_bump)
+             for scn in _SCENARIOS],
+            ignore_index=True,
+        )
+    unstash_irmap(design)
+    table = add_labels(fdf, design.irmap, cfg_local)
+
+    models = load_hybrid_model()
+    pred, q10, q90 = predict_variant(models, table)
+    lo, hi = apply_conformal(q10, q90, models["Q_add"], models["Q_ratio"])
+
+    return pd.DataFrame({
+        "design": table["design"].astype(str),
+        "scenario": table["scenario"].astype(str),
+        "partition": "uploaded",
+        "tile_id": table["ty"].to_numpy() * nx_c + table["tx"].to_numpy(),
+        "pred_v": pred,
+        "lo_v": lo,
+        "hi_v": hi,
+        "label_v": table["label_v"].to_numpy(),
+        "coarse_v": table["phys_base_v"].to_numpy(),
+    })
+
+
+def _upload_mode_help() -> str:
+    """The 'neither mode matched' message: say plainly what was expected."""
+    return (
+        "**Design bundle (mode A)** — the nine CSVs of `docs/DATA_SCHEMA.md`, "
+        "as a multi-file selection or a `.zip` (nesting one folder deep is fine). "
+        "Detected by `design_stats.csv` **and** `instances.csv` being present:\n\n"
+        + "".join(f"- `{n}`\n" for n in DESIGN_BUNDLE_FILES)
+        + "\n**Predictions table (mode B)** — a single CSV carrying at least "
+        "these columns:\n\n"
+        + "".join(f"- `{c}`\n" for c in PRED_TABLE_REQUIRED)
+        + "\n  (`lo_v`, `hi_v`, `coarse_v` optional; they default to `pred_v`.)"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # Page Setup
 # ═══════════════════════════════════════════════════════════════════════════
 
 st.set_page_config(
     page_title="PRISM — Hybrid IR-Drop Predictor",
-    page_icon="⚡",
+    page_icon="◉",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -940,7 +1140,7 @@ except Exception as exc:
 
 st.sidebar.markdown("""
 <div class="sidebar-logo">
-    <span class="sidebar-logo-icon">⚡</span>
+    <span class="sidebar-logo-icon">◉</span>
     <span class="sidebar-logo-text">PRISM</span>
     <div class="sidebar-logo-sub">Physics-Informed IR Predictor</div>
 </div>
@@ -969,38 +1169,196 @@ source_mode = st.sidebar.radio(
 )
 
 is_custom_data = False
+custom_mode = None
 is_iccad_mode = False
 selected_iccad = None
 iccad_data = None
 iccad_stats = None
 
 if source_mode == "Upload Custom CSV":
-    uploaded_file = st.sidebar.file_uploader(
-        "Upload Predictions CSV",
-        type=["csv"],
-        help="Upload an alternative predictions CSV matching the Role C schema (design, scenario, tile_id, pred_v, lo_v, hi_v, label_v, coarse_v).",
+    # ── FIX 1 + FIX 2 ──────────────────────────────────────────────────────
+    # Two upload modes, auto-detected.  On ANY failure the page renders the
+    # errors and nothing else: falling back to the bundled synthetic corpus
+    # would look exactly like a successful upload, which is the worst
+    # possible failure mode for a demo.
+    st.session_state.setdefault("csv_ok", False)          # data is live
+    st.session_state.setdefault("csv_pred_df", None)
+    st.session_state.setdefault("csv_file_names", [])
+    st.session_state.setdefault("csv_mode", None)         # "design" | "predictions"
+    st.session_state.setdefault("csv_errors", [])
+    st.session_state.setdefault("csv_help", "")
+    st.session_state.setdefault("csv_attempted", False)   # a Submit has run
+    st.session_state.setdefault("csv_timing", "")
+    st.session_state.setdefault("csv_saved_path", "")
+
+    st.sidebar.caption("**Custom design — computes on upload**")
+
+    uploaded_files = st.sidebar.file_uploader(
+        "Upload design bundle or predictions CSV",
+        type=["csv", "zip"],
+        accept_multiple_files=True,
+        help=(
+            "MODE A — DESIGN BUNDLE: the nine CSVs of docs/DATA_SCHEMA.md "
+            "(design_stats, modules, macros, instances, bumps, strap_planned, "
+            "activity, paths, irmap), as a multi-file selection or a .zip. "
+            "Runs the frozen hybrid model and the shipped conformal band.\n\n"
+            "MODE B — PREDICTIONS TABLE: a single CSV with design, scenario, "
+            "tile_id, pred_v, label_v. Rendered as-is; nothing is computed."
+        ),
     )
-    if uploaded_file is not None:
-        try:
-            custom_df = pd.read_csv(uploaded_file, comment="#")
-            req_cols = {"design", "scenario", "tile_id", "pred_v", "label_v"}
-            if not req_cols.issubset(set(custom_df.columns)):
-                missing = req_cols - set(custom_df.columns)
-                st.sidebar.error(f"CSV missing columns: {', '.join(missing)}")
+
+    # A change of selection invalidates everything from the previous submit.
+    current_names = sorted(uf.name for uf in uploaded_files) if uploaded_files else []
+    if current_names and current_names != st.session_state["csv_file_names"]:
+        st.session_state.update(
+            csv_ok=False, csv_pred_df=None, csv_file_names=current_names,
+            csv_mode=None, csv_errors=[], csv_help="", csv_attempted=False,
+            csv_timing="", csv_saved_path="",
+        )
+
+    if uploaded_files:
+        file_summary = ", ".join(uf.name for uf in uploaded_files[:3])
+        if len(uploaded_files) > 3:
+            file_summary += f" +{len(uploaded_files) - 3} more"
+        st.sidebar.caption(f"{len(uploaded_files)} file(s) selected: {file_summary}")
+
+        if st.sidebar.button("▶ Submit & Run", key="btn_csv_submit", use_container_width=True):
+            errors: list = []
+            help_md = ""
+            mode = None
+            new_df = None
+            timing = ""
+            saved_rel_path = ""
+
+            workdir = pathlib.Path(tempfile.mkdtemp(prefix="prism_upload_"))
+            try:
+                basenames, place_errors = _materialise_upload(uploaded_files, workdir)
+                errors.extend(place_errors)
+
+                if errors:
+                    pass  # duplicate/unreadable-archive errors are fatal on their own
+
+                elif _looks_like_design_bundle(basenames):
+                    # ── MODE A: DESIGN BUNDLE ──────────────────────────────
+                    mode = "design"
+                    with st.spinner("Validating design bundle…"):
+                        from prism.io_csv import validate_design
+                        errors = list(validate_design(str(workdir)))
+                    if not errors:
+                        try:
+                            with st.spinner(
+                                "Extracting features, running hybrid model, "
+                                "applying conformal band…"
+                            ):
+                                _t0 = time.perf_counter()
+                                new_df = compute_design_bundle(str(workdir))
+                                timing = f"{time.perf_counter() - _t0:.2f}s"
+                        except Exception as exc:
+                            errors = [f"Pipeline failed on the design bundle: {exc}"]
+
+                elif all(not uf.name.lower().endswith(".zip") for uf in uploaded_files):
+                    # ── MODE B: PREDICTIONS TABLE ──────────────────────────
+                    dfs = []
+                    for uf in uploaded_files:
+                        try:
+                            df_i = pd.read_csv(workdir / pathlib.Path(uf.name).name,
+                                               comment="#")
+                        except Exception as exc:
+                            errors.append(f"{uf.name}: cannot read CSV: {exc}")
+                            continue
+                        missing = [c for c in PRED_TABLE_REQUIRED
+                                   if c not in df_i.columns]
+                        if missing:
+                            errors.append(
+                                f"{uf.name}: missing required columns: "
+                                f"{', '.join(missing)}"
+                            )
+                            continue
+                        for opt in ("coarse_v", "lo_v", "hi_v"):
+                            if opt not in df_i.columns:
+                                df_i[opt] = df_i["pred_v"]
+                        if "partition" not in df_i.columns:
+                            df_i["partition"] = "uploaded"
+                        dfs.append(df_i)
+                    if dfs and not errors:
+                        mode = "predictions"
+                        new_df = pd.concat(dfs, ignore_index=True)
+                    elif not errors:
+                        errors.append("No readable rows in the uploaded CSV(s).")
+
+                if new_df is None and not errors:
+                    errors.append(
+                        "Upload matched neither supported format. Received: "
+                        + ", ".join(basenames or ["(nothing)"])
+                    )
+                    help_md = _upload_mode_help()
+                elif errors and mode is None:
+                    help_md = _upload_mode_help()
+
+                # ── Persist uploaded files and predictions into data/uploads/ ──
+                if new_df is not None and not errors:
+                    try:
+                        uploads_root = pathlib.Path("data") / "uploads"
+                        uploads_root.mkdir(parents=True, exist_ok=True)
+                        if mode == "design" and "design" in new_df.columns and len(new_df) > 0:
+                            dest_name = str(new_df["design"].iloc[0]).strip()
+                        elif mode == "design" and (workdir / "design_stats.csv").exists():
+                            try:
+                                ds_df = pd.read_csv(workdir / "design_stats.csv", comment="#")
+                                dest_name = str(ds_df.iloc[0]["design_id"]).strip()
+                            except Exception:
+                                dest_name = f"design_{time.strftime('%Y%m%d_%H%M%S')}"
+                        else:
+                            dest_name = f"dataset_{time.strftime('%Y%m%d_%H%M%S')}"
+
+                        save_dir = uploads_root / dest_name
+                        save_dir.mkdir(parents=True, exist_ok=True)
+                        for item in workdir.iterdir():
+                            if item.is_file():
+                                shutil.copy2(item, save_dir / item.name)
+                        new_df.to_csv(save_dir / "predictions.csv", index=False)
+                        saved_rel_path = f"data/uploads/{dest_name}"
+                    except Exception:
+                        pass
+            finally:
+                shutil.rmtree(workdir, ignore_errors=True)
+
+            if new_df is not None and not errors:
+                st.session_state.update(
+                    csv_ok=True, csv_pred_df=new_df, csv_mode=mode,
+                    csv_errors=[], csv_help="", csv_attempted=True,
+                    csv_file_names=current_names, csv_timing=timing,
+                    csv_saved_path=saved_rel_path,
+                )
             else:
-                if "coarse_v" not in custom_df.columns:
-                    custom_df["coarse_v"] = custom_df["pred_v"]
-                if "lo_v" not in custom_df.columns:
-                    custom_df["lo_v"] = custom_df["pred_v"]
-                if "hi_v" not in custom_df.columns:
-                    custom_df["hi_v"] = custom_df["pred_v"]
-                if "partition" not in custom_df.columns:
-                    custom_df["partition"] = "uploaded"
-                pred_df = custom_df
-                is_custom_data = True
-                st.sidebar.success(f"Using {uploaded_file.name} ({len(pred_df):,} rows)")
-        except Exception as exc:
-            st.sidebar.error(f"Error loading CSV: {exc}")
+                st.session_state.update(
+                    csv_ok=False, csv_pred_df=None, csv_mode=mode,
+                    csv_errors=errors, csv_help=help_md, csv_attempted=True,
+                    csv_file_names=current_names, csv_timing="",
+                    csv_saved_path="",
+                )
+            st.rerun()
+
+    if st.session_state["csv_ok"] and st.session_state["csv_pred_df"] is not None:
+        pred_df = st.session_state["csv_pred_df"]
+        is_custom_data = True
+        custom_mode = st.session_state["csv_mode"]
+        saved_p = st.session_state.get("csv_saved_path", "")
+        success_msg = (
+            f"✓ {len(st.session_state['csv_file_names'])} file(s) active — "
+            f"{len(pred_df):,} rows "
+            f"({'design bundle, computed' if custom_mode == 'design' else 'predictions table'})"
+        )
+        if saved_p:
+            success_msg += f"\n\n📂 **Stored in:** `{saved_p}`"
+        st.sidebar.success(success_msg)
+        if st.sidebar.button("Reset Upload", key="btn_csv_reset", use_container_width=True):
+            st.session_state.update(
+                csv_ok=False, csv_pred_df=None, csv_file_names=[], csv_mode=None,
+                csv_errors=[], csv_help="", csv_attempted=False, csv_timing="",
+                csv_saved_path="",
+            )
+            st.rerun()
 
 elif source_mode == "ICCAD 2023 Real Circuits":
     iccad_benches = list_real_benchmarks()
@@ -1011,6 +1369,58 @@ elif source_mode == "ICCAD 2023 Real Circuits":
         is_iccad_mode = True
     else:
         st.sidebar.warning("ICCAD 2023 benchmarks directory not found.")
+
+# ═══════════════════════════════════════════════════════════════════════════
+# FIX 1 — NO SILENT FALLBACK
+#
+# Under "Upload Custom CSV" the bundled synthetic corpus is NEVER a fallback.
+# If there is no live uploaded data, the app renders the errors and stops:
+# no heatmaps, no metric cards, no analysis box.  A failed upload that still
+# showed syn_000 / seq_read / 43.04 mV would be indistinguishable from a
+# successful one, which is the one failure mode a demo cannot survive.
+# ═══════════════════════════════════════════════════════════════════════════
+
+if source_mode == "Upload Custom CSV" and not is_custom_data:
+    st.markdown("""
+    <div class="hero">
+        <div class="hero-status"><div class="hero-pulse"></div>CUSTOM DESIGN — COMPUTES ON UPLOAD</div>
+        <h1 class="hero-title">Custom Upload — <span>No Data Rendered</span></h1>
+        <p class="hero-desc">
+            This data source shows uploaded data only. Bundled designs are never
+            substituted here, so nothing below is stale or synthetic.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.session_state.get("csv_attempted"):
+        st.error(
+            "**Upload failed — no data shown. "
+            "Switch data source to view bundled designs.**"
+        )
+        errs = st.session_state.get("csv_errors", [])
+        if errs:
+            if st.session_state.get("csv_mode") == "design":
+                st.markdown(
+                    "Reported verbatim by `io_csv.validate_design()` — each message "
+                    "names the file and the column at fault:"
+                )
+            else:
+                st.markdown("Reported by the uploader:")
+            st.code("\n".join(str(e) for e in errs), language=None)
+        help_md = st.session_state.get("csv_help", "")
+        if help_md:
+            st.markdown("**Expected formats**")
+            st.markdown(help_md)
+    else:
+        st.info(
+            "Waiting for an upload. Select files in the sidebar and press "
+            "**Submit & Run** — or switch the data source to view bundled designs."
+        )
+        st.markdown("**Accepted formats**")
+        st.markdown(_upload_mode_help())
+
+    st.stop()
+
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(f'<div class="card-label" style="padding-left:2px;">CONTROLS</div>', unsafe_allow_html=True)
@@ -1042,9 +1452,13 @@ budget_v = budget_mv / 1000.0
 
 st.sidebar.markdown("---")
 st.sidebar.info(
-    "🔒 **Rule R7 Enforced**\n"
-    "Dashboard never runs ML models or solvers. "
-    "All numbers originate from precomputed validation tables and frozen predictions."
+    "◉ **Rule R7 Enforced**\n"
+    "Predict · Validate · Scenarios · Findings never run ML models or solvers — "
+    "every number there comes from precomputed validation tables and frozen "
+    "predictions.\n\n"
+    "**One declared exception:** an uploaded *design bundle* has no precomputed "
+    "artifact, so that page computes on upload "
+    "(features → models/hybrid.joblib → shipped conformal band)."
 )
 
 
@@ -1068,24 +1482,24 @@ if page == "Predict":
 
         # -- PIPELINE --
         st.markdown(pipeline_step([
-            ("📡", "Layout Loaded", "done"),
-            ("🔬", "Feature Extract", "done"),
-            ("⚙️", "Grid Analysis", "done"),
-            ("🧠", "IR-Drop Map", "active"),
-            ("✅", "Signoff Ready", "done"),
+            ("◉", "Layout Loaded", "done"),
+            ("⊕", "Feature Extract", "done"),
+            ("⚙", "Grid Analysis", "done"),
+            ("∿", "IR-Drop Map", "active"),
+            ("✓", "Signoff Ready", "done"),
         ]), unsafe_allow_html=True)
 
         # -- KPI CARDS --
         kpi1, kpi2, kpi3, kpi4 = st.columns(4)
         with kpi1:
             st.markdown(metric_card(
-                "📐", "Grid Resolution",
+                "∠", "Grid Resolution",
                 f"{int(iccad_stats['grid_resolution'])}×{int(iccad_stats['grid_resolution'])}",
                 f"{int(iccad_stats['grid_resolution']**2):,} total tiles",
             ), unsafe_allow_html=True)
         with kpi2:
             st.markdown(metric_card(
-                "⚡", "Total Current",
+                "↑", "Total Current",
                 f"{iccad_stats['total_current_ma']:.2f} mA",
                 f"Peak tile: {iccad_stats['peak_tile_current_ua']:.2f} µA",
             ), unsafe_allow_html=True)
@@ -1093,20 +1507,20 @@ if page == "Predict":
             peak_mv = iccad_stats["max_ir_drop_mv"]
             severity = "danger" if peak_mv > budget_mv else ("warning" if peak_mv > budget_mv * 0.7 else "success")
             st.markdown(metric_card(
-                "🔴", "Peak IR Drop",
+                "△", "Peak IR Drop",
                 f"{peak_mv:.2f} mV",
                 f"Mean: {iccad_stats['mean_ir_drop_mv']:.2f} mV",
                 status=severity,
             ), unsafe_allow_html=True)
         with kpi4:
             st.markdown(metric_card(
-                "🔩", "PDN Density",
+                "⊞", "PDN Density",
                 f"{iccad_stats['mean_pdn_density']:.2f}",
                 "Metal routing layers",
             ), unsafe_allow_html=True)
 
         # -- HEATMAPS --
-        st.markdown(section_header("Spatial Channel Maps", "4-channel feature tensor visualization", "🗺️"), unsafe_allow_html=True)
+        st.markdown(section_header("Spatial Channel Maps", "4-channel feature tensor visualization", "⊞"), unsafe_allow_html=True)
 
         row1_c1, row1_c2 = st.columns(2)
         with row1_c1:
@@ -1169,7 +1583,7 @@ if page == "Predict":
         # -- HERO --
         st.markdown(f"""
         <div class="hero">
-            <div class="hero-status"><div class="hero-pulse"></div>{'CUSTOM DATA' if is_custom_data else 'PREDICTION ENGINE'}</div>
+            <div class="hero-status"><div class="hero-pulse"></div>{'CUSTOM DESIGN — COMPUTES ON UPLOAD' if custom_mode == 'design' else ('CUSTOM DATA' if is_custom_data else 'PREDICTION ENGINE')}</div>
             <h1 class="hero-title">IR-Drop Prediction — <span>{selected_design}</span></h1>
             <p class="hero-desc">
                 Tile-level spatial inspection: hybrid residual predictions vs signoff ground truth
@@ -1179,21 +1593,41 @@ if page == "Predict":
         """, unsafe_allow_html=True)
 
         if is_custom_data:
+            _names = st.session_state.get("csv_file_names", [])
+            names_display = ", ".join(_names[:3])
+            if len(_names) > 3:
+                names_display += f" +{len(_names) - 3} more"
+            if custom_mode == "design":
+                _timing = st.session_state.get("csv_timing", "")
+                _prov = (
+                    "Design bundle &mdash; <strong>computed on upload</strong>: "
+                    "io_csv.load_design &rarr; features.design_features &rarr; "
+                    "models/hybrid.joblib &rarr; shipped additive conformal band"
+                    + (f" ({_timing})" if _timing else "")
+                )
+            else:
+                _prov = (
+                    "Predictions table &mdash; rendered as supplied, "
+                    "<strong>nothing recomputed</strong>"
+                )
+            _saved_p = st.session_state.get("csv_saved_path", "")
+            _saved_html = f" &bull; <span>Stored in: <code style='color: var(--accent);'>{_saved_p}</code></span>" if _saved_p else ""
             st.markdown(f"""
             <div class="ai-panel ai-severity-nominal fade-in" style="padding: 0.8rem 1.2rem; margin: 0 0 1rem;">
                 <div style="font-size: 0.82rem; color: var(--text-secondary);">
-                    📂 Custom Dataset: <strong style="color: var(--text-primary);">{uploaded_file.name}</strong> — {len(pred_df):,} rows loaded
+                    &#x25A4; Custom Dataset: <strong style="color: var(--text-primary);">{names_display}</strong> &mdash; {len(pred_df):,} rows ({len(_names)} file(s)){_saved_html}<br>
+                    {_prov}
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
         # -- PIPELINE --
         st.markdown(pipeline_step([
-            ("📡", "Data Ingested", "done"),
-            ("⚙️", "Coarse Solve", "done"),
-            ("🧠", "Hybrid Residual", "done"),
-            ("📊", "Conformal Bands", "done"),
-            ("🎯", "Prediction", "active"),
+            ("◉", "Data Ingested", "done"),
+            ("⚙", "Coarse Solve", "done"),
+            ("∿", "Hybrid Residual", "done"),
+            ("≡", "Conformal Bands", "done"),
+            ("◎", "Prediction", "active"),
         ]), unsafe_allow_html=True)
 
         # Filter data for selected design & scenario
@@ -1246,7 +1680,7 @@ if page == "Predict":
                 f"<b>Error (Pred - Label):</b> {err_mv:+.2f} mV<br>"
                 f"<b>Conformal Band:</b> [{lo_mv:.2f}, {hi_mv:.2f}] mV<br>"
                 f"<b>Band Width:</b> {w_mv:.2f} mV<br>"
-                f"<b>In Band:</b> {'✅ Yes' if in_band else '❌ No'}"
+                f"<b>In Band:</b> {'✓ Yes' if in_band else '✗ No'}"
             )
 
         # KPIs
@@ -1256,12 +1690,35 @@ if page == "Predict":
         label_viol = int(np.sum(label_grid > budget_mv))
         slice_coverage = float(np.mean((sub["label_v"] >= sub["lo_v"]) & (sub["label_v"] <= sub["hi_v"]))) * 100.0
         mae = np.mean(np.abs(error_grid))
+        mean_band_mv = float(np.mean(width_grid))
+
+        # FIX 3: coverage measured on a design the model was fitted or
+        # calibrated on is an in-sample number.  syn_000 reads 100.0% for
+        # exactly that reason, and it must never be shown unqualified; the
+        # holdout figure from out/validation.csv is shown beside it.
+        partition = design_partition(selected_design, pred_df)
+        in_sample = partition in ("train", "calib")
+        holdout_pct = holdout_picp_pct(val_df)
+        coverage_label = "Conformal Coverage (in-sample)" if in_sample else "Conformal Coverage"
+        if in_sample:
+            coverage_sub = (
+                f"in-sample ({partition}) · holdout {holdout_pct:.2f}% · "
+                f"mean band {mean_band_mv:.2f} mV"
+            )
+            coverage_status = ""          # in-sample coverage earns no green tick
+        else:
+            coverage_sub = (
+                f"{partition} · holdout {holdout_pct:.2f}% · "
+                f"mean band {mean_band_mv:.2f} mV"
+            )
+            coverage_status = "success" if slice_coverage > 75 else (
+                "warning" if slice_coverage > 60 else "danger")
 
         kpi1, kpi2, kpi3, kpi4 = st.columns(4)
         with kpi1:
             sev = "danger" if pred_max > budget_mv else ("warning" if pred_max > budget_mv * 0.8 else "success")
             st.markdown(metric_card(
-                "📈", "Peak Predicted Drop",
+                "↑", "Peak Predicted Drop",
                 f"{pred_max:.2f} mV",
                 f"Signoff max: {label_max:.2f} mV",
                 status=sev,
@@ -1269,51 +1726,72 @@ if page == "Predict":
         with kpi2:
             max_err_str = f"{error_grid.max():+.2f}"
             st.markdown(metric_card(
-                "🎯", "Mean Abs Error",
+                "◎", "Mean Abs Error",
                 f"{mae:.2f} mV",
                 f"Max signed err: {max_err_str} mV",
             ), unsafe_allow_html=True)
         with kpi3:
             st.markdown(metric_card(
-                "⚠️", f"Tiles &gt; {budget_mv:.0f} mV",
+                "△", f"Tiles &gt; {budget_mv:.0f} mV",
                 f"{pred_viol} / {label_viol}",
                 "pred / signoff (576 total)",
                 status="danger" if pred_viol > 50 else ("warning" if pred_viol > 10 else "success"),
             ), unsafe_allow_html=True)
         with kpi4:
             st.markdown(metric_card(
-                "🛡️", "Conformal Coverage",
+                "◈", coverage_label,
                 f"{slice_coverage:.1f}%",
-                f"Mean band: {np.mean(width_grid):.2f} mV",
-                status="success" if slice_coverage > 75 else ("warning" if slice_coverage > 60 else "danger"),
+                coverage_sub,
+                status=coverage_status,
             ), unsafe_allow_html=True)
 
-        # -- AI INSIGHT PANEL --
-        bias_mv_val = np.mean(error_grid)
+        # -- ANALYSIS PANEL --
+        # FIX 3: every number in this panel is computed from the tiles on
+        # screen.  "Prediction Quality Nominal" and the AI-confidence badge
+        # are gone; nothing in this repo measures either.
+        bias_mv_val = float(np.mean(error_grid))
+        coverage_phrase = (
+            f"coverage {slice_coverage:.1f}% <em>in-sample</em> "
+            f"(holdout {holdout_pct:.2f}%)"
+            if in_sample else
+            f"coverage {slice_coverage:.1f}% (holdout reference {holdout_pct:.2f}%)"
+        )
+
         if pred_viol > 50:
             ai_sev = "danger"
-            ai_title = f"⚠️ High Violation Count Detected — {pred_viol} tiles exceed {budget_mv:.0f} mV budget"
-            ai_rec = f"<strong>Recommendation:</strong> Critical IR violations across {pred_viol}/576 tiles. PDN reinforcement needed in hotspot regions. Consider adding power straps or reducing local cell density."
+            ai_title = (f"△ {pred_viol} of 576 tiles exceed the {budget_mv:.0f} mV "
+                        f"budget — peak predicted {pred_max:.2f} mV")
+            ai_rec = (f"<strong>Recommendation:</strong> IR violations across "
+                      f"{pred_viol}/576 tiles. PDN reinforcement in the hotspot "
+                      f"regions — added straps or reduced local cell density.")
         elif abs(bias_mv_val) > 3:
             ai_sev = "warning"
-            ai_title = f"Systematic Bias Detected — Mean error {bias_mv_val:+.2f} mV"
-            ai_rec = f"<strong>Recommendation:</strong> {'Under' if bias_mv_val < 0 else 'Over'}-prediction bias of {abs(bias_mv_val):.2f} mV may affect signoff accuracy. Review calibration transfer metrics."
+            ai_title = f"Systematic bias — mean signed error {bias_mv_val:+.2f} mV"
+            ai_rec = (f"<strong>Recommendation:</strong> "
+                      f"{'Under' if bias_mv_val < 0 else 'Over'}-prediction of "
+                      f"{abs(bias_mv_val):.2f} mV on average. On out-of-corpus data "
+                      f"this is usually the physics prior sitting on the wrong "
+                      f"conductance scale — see out/real_data_findings.md §3.")
         else:
             ai_sev = "nominal"
-            ai_title = f"✅ Prediction Quality Nominal — MAE {mae:.2f} mV, Coverage {slice_coverage:.1f}%"
-            ai_rec = f"<strong>Assessment:</strong> Hybrid model predictions align well with signoff ground truth. Conformal intervals provide {slice_coverage:.1f}% empirical coverage. Design within IR budget tolerance."
+            ai_title = (f"MAE {mae:.2f} mV · peak predicted {pred_max:.2f} mV vs "
+                        f"signoff {label_max:.2f} mV · mean band {mean_band_mv:.2f} mV")
+            ai_rec = (f"<strong>Measured:</strong> mean absolute error "
+                      f"{mae:.2f} mV over 576 tiles, mean signed error "
+                      f"{bias_mv_val:+.2f} mV, conformal {coverage_phrase}.")
 
         st.markdown(ai_insight_panel(
             ai_title,
             f"Design <strong>{selected_design}</strong> under <strong>{selected_scenario}</strong> workload · "
-            f"Peak predicted drop: <strong>{pred_max:.2f} mV</strong> vs signoff <strong>{label_max:.2f} mV</strong><br><br>"
+            f"Peak predicted drop: <strong>{pred_max:.2f} mV</strong> vs signoff <strong>{label_max:.2f} mV</strong> · "
+            f"MAE <strong>{mae:.2f} mV</strong> · mean conformal band <strong>{mean_band_mv:.2f} mV</strong><br><br>"
             f"{ai_rec}",
-            confidence=f"{max(0, 100 - mae * 5):.0f}%",
+            stat=f"MAE {mae:.2f} mV · band {mean_band_mv:.2f} mV",
             severity=ai_sev,
         ), unsafe_allow_html=True)
 
         # -- HEATMAPS --
-        st.markdown(section_header("Spatial Voltage Maps", "24×24 tile grid — hover for detailed metrics", "🗺️"), unsafe_allow_html=True)
+        st.markdown(section_header("Spatial Voltage Maps", "24×24 tile grid — hover for detailed metrics", "⊞"), unsafe_allow_html=True)
 
         common_vmin = float(min(pred_grid.min(), label_grid.min()))
         common_vmax = float(max(pred_grid.max(), label_grid.max()))
@@ -1369,7 +1847,7 @@ if page == "Predict":
             st.markdown('</div>', unsafe_allow_html=True)
 
         if show_width:
-            st.markdown(section_header("Conformal Uncertainty Band Width", "hi_v − lo_v per tile", "📏"), unsafe_allow_html=True)
+            st.markdown(section_header("Conformal Uncertainty Band Width", "hi_v − lo_v per tile", "↔"), unsafe_allow_html=True)
             st.markdown('<div class="chart-container">', unsafe_allow_html=True)
             fig_w = go.Figure(
                 data=go.Heatmap(
@@ -1385,7 +1863,7 @@ if page == "Predict":
             st.markdown('</div>', unsafe_allow_html=True)
 
         # -- SYSTEM ACTIVITY --
-        st.markdown(section_header("System Activity", "", "📋"), unsafe_allow_html=True)
+        st.markdown(section_header("System Activity", "", "≡"), unsafe_allow_html=True)
         st.markdown(f"""
         <div class="activity-log fade-in">
             <div class="activity-item">
@@ -1410,8 +1888,8 @@ if page == "Predict":
             </div>
             <div class="activity-item">
                 <div class="activity-dot activity-dot-success"></div>
-                Conformal intervals computed — PICP {slice_coverage:.1f}%
-                <span class="activity-time">verified</span>
+                Conformal intervals — PICP {slice_coverage:.1f}%{' (in-sample)' if in_sample else ''} · holdout {holdout_pct:.2f}%
+                <span class="activity-time">{partition}</span>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -1436,15 +1914,15 @@ elif page == "Validate":
 
     # -- PIPELINE --
     st.markdown(pipeline_step([
-        ("🎲", "5 Seeds", "done"),
-        ("🔀", "Cross-Val", "done"),
-        ("📊", "Ablation", "done"),
-        ("🧪", "Holdout Test", "done"),
-        ("✅", "Validated", "active"),
+        ("⬡", "5 Seeds", "done"),
+        ("⇄", "Cross-Val", "done"),
+        ("≡", "Ablation", "done"),
+        ("▲", "Holdout Test", "done"),
+        ("✓", "Validated", "active"),
     ]), unsafe_allow_html=True)
 
     # -- ABLATION TABLE --
-    st.markdown(section_header("Four-Variant Ablation", "Holdout-only performance metrics (mean ± std)", "🔬"), unsafe_allow_html=True)
+    st.markdown(section_header("Four-Variant Ablation", "Holdout-only performance metrics (mean ± std)", "⊕"), unsafe_allow_html=True)
 
     target_metrics = [
         ("violation_f1", "Violation F1 (45mV)", "{:.4f}"),
@@ -1494,14 +1972,14 @@ elif page == "Validate":
         "(recall > 0.89) and continuous field accuracy (MAE 1.87 mV vs 3.59 mV).<br><br>"
         "<strong>Risk assessment:</strong> Under-prediction is hazardous in physical design — predicting "
         "42 mV when real drop is 48 mV causes unflagged timing violations to escape into silicon.",
-        confidence="96.6%",
+        stat="hybrid MAE 1.87 mV · PICP 0.8205 (holdout, 25 runs)",
         severity="nominal",
     ), unsafe_allow_html=True)
 
     st.markdown("---")
 
     # -- FIGURES --
-    st.markdown(section_header("Diagnostic Figure Suite", "Precision-recall curves, calibration transfer, and conformal diagnostics", "📊"), unsafe_allow_html=True)
+    st.markdown(section_header("Diagnostic Figure Suite", "Precision-recall curves, calibration transfer, and conformal diagnostics", "≡"), unsafe_allow_html=True)
 
     fig_col1, fig_col2 = st.columns(2)
     with fig_col1:
@@ -1533,7 +2011,7 @@ elif page == "Validate":
     st.markdown("---")
 
     # -- LEAKAGE AUDIT --
-    st.markdown(section_header("Live Leakage Audit", "Zero-network R2 compliance demonstration", "🔒"), unsafe_allow_html=True)
+    st.markdown(section_header("Live Leakage Audit", "Zero-network R2 compliance demonstration", "◉"), unsafe_allow_html=True)
 
     st.markdown(f"""
     <div class="ai-panel ai-severity-nominal fade-in" style="padding: 1rem 1.4rem;">
@@ -1545,7 +2023,7 @@ elif page == "Validate":
     </div>
     """, unsafe_allow_html=True)
 
-    if st.button("⚡ Run Leakage Audit", key="btn_leakage_audit"):
+    if st.button("▶ Run Leakage Audit", key="btn_leakage_audit"):
         with st.spinner("Executing prism.audit verification..."):
             t0 = time.time()
             try:
@@ -1557,10 +2035,10 @@ elif page == "Validate":
                 )
                 elapsed = time.time() - t0
                 if res.returncode == 0 and "LEAKAGE TRAP SELF-TEST: PASS" in res.stdout:
-                    st.success(f"✅ LEAKAGE AUDIT: PASS (verified in {elapsed:.2f}s with 0 network calls)")
+                    st.success(f"✓ LEAKAGE AUDIT: PASS (verified in {elapsed:.2f}s with 0 network calls)")
                     st.code(res.stdout, language="text")
                 else:
-                    st.error("❌ LEAKAGE AUDIT ENCOUNTERED ISSUES")
+                    st.error("✗ LEAKAGE AUDIT ENCOUNTERED ISSUES")
                     st.code(res.stderr or res.stdout, language="text")
             except Exception as e:
                 st.error(f"Failed to execute audit process: {e}")
@@ -1585,12 +2063,12 @@ elif page == "Scenarios":
 
     # -- PIPELINE --
     st.markdown(pipeline_step([
-        ("💤", "Idle", "done"),
-        ("📖", "Seq Read", "done"),
-        ("✏️", "Seq Write", "done"),
-        ("🎲", "Rand 4K", "done"),
-        ("🗑️", "GC Compact", "done"),
-        ("🔧", "ECC Recover", "done"),
+        ("○", "Idle", "done"),
+        ("≡", "Seq Read", "done"),
+        ("✎", "Seq Write", "done"),
+        ("⬡", "Rand 4K", "done"),
+        ("◻", "GC Compact", "done"),
+        ("⌧", "ECC Recover", "done"),
     ]), unsafe_allow_html=True)
 
     # Filter data for selected design
@@ -1607,7 +2085,7 @@ elif page == "Scenarios":
     ]
 
     # -- SCENARIO GRID --
-    st.markdown(section_header("Scenario Heatmap Grid", "Predicted IR drop across all workloads — shared color scale", "🌡️"), unsafe_allow_html=True)
+    st.markdown(section_header("Scenario Heatmap Grid", "Predicted IR drop across all workloads — shared color scale", "▦"), unsafe_allow_html=True)
 
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     fig_grid = make_subplots(
@@ -1662,7 +2140,7 @@ elif page == "Scenarios":
     st.markdown("---")
 
     # -- VIOLATION BAR CHART --
-    st.markdown(section_header("Budget Violations by Scenario", f"Tiles exceeding {budget_mv:.0f} mV threshold with mission weights", "📊"), unsafe_allow_html=True)
+    st.markdown(section_header("Budget Violations by Scenario", f"Tiles exceeding {budget_mv:.0f} mV threshold with mission weights", "△"), unsafe_allow_html=True)
 
     violation_data = []
     for s in scenarios_ordered:
@@ -1731,7 +2209,7 @@ elif page == "Scenarios":
         f"failure under garbage-collection bursts.<br><br>"
         f"<strong>Recommendation:</strong> Prioritize PDN reinforcement in high-current regions "
         f"identified by the gc_compact workload profile.",
-        confidence=f"{max(0, 100 - gc_count * 0.2):.0f}%",
+        stat=f"{gc_count}/576 tiles over {budget_mv:.0f} mV",
         severity=ai_sev_scn,
     ), unsafe_allow_html=True)
 
@@ -1755,19 +2233,19 @@ elif page == "Findings":
 
     # -- PIPELINE --
     st.markdown(pipeline_step([
-        ("📄", "Findings", "active"),
-        ("🔬", "Formulation", "done"),
-        ("⚠️", "Limitations", "done"),
-        ("📋", "Contract", "done"),
+        ("▤", "Findings", "active"),
+        ("⊕", "Formulation", "done"),
+        ("△", "Limitations", "done"),
+        ("≡", "Contract", "done"),
     ]), unsafe_allow_html=True)
 
-    tab1, tab2, tab3 = st.tabs(["📋 Executive Findings", "🔬 Two-Fidelity Formulation", "⚠️ Engineering Limitations"])
+    tab1, tab2, tab3 = st.tabs(["▤ Executive Findings", "⊕ Two-Fidelity Formulation", "△ Engineering Limitations"])
 
     with tab1:
         st.markdown(findings_md)
 
     with tab2:
-        st.markdown(section_header("The PRISM Two-Fidelity Architecture", "", "🏗️"), unsafe_allow_html=True)
+        st.markdown(section_header("The PRISM Two-Fidelity Architecture", "", "◧"), unsafe_allow_html=True)
         st.markdown(
             r"""
             Instead of treating IR-drop prediction as an unconstrained image-to-image translation task,
@@ -1783,7 +2261,7 @@ elif page == "Findings":
             """
         )
 
-        st.markdown(section_header("Two-Fidelity Specification", "", "📐"), unsafe_allow_html=True)
+        st.markdown(section_header("Two-Fidelity Specification", "", "∠"), unsafe_allow_html=True)
         two_fid_data = {
             "Dimension": [
                 "Stage",
@@ -1813,7 +2291,7 @@ elif page == "Findings":
         st.table(pd.DataFrame(two_fid_data).set_index("Dimension"))
 
     with tab3:
-        st.markdown(section_header("Honest Engineering Limitations", "", "⚠️"), unsafe_allow_html=True)
+        st.markdown(section_header("Honest Engineering Limitations", "", "△"), unsafe_allow_html=True)
         st.markdown(
             r"""
             In accordance with engineering ethics and Rule R3 (no fabricated claims), we document the known boundaries of this deliverable:

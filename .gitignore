@@ -1,0 +1,16 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Pytest cache
+.pytest_cache/
+
+# Local benchmark data & archives
+B(0)/
+B(1)/
+*.zip
+
+# Streamlit / runtime uploads
+prism/data/uploads/
