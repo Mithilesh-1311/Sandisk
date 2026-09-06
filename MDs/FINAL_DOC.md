@@ -518,4 +518,5 @@ picoseconds, knapsack algorithms select measured fixes, and telemetry loops map 
 | `docs/DATA_SCHEMA.md` | The 9-CSV data contract, column by column, with validation rules |
 | `docs/ML_INPUT_SPEC.md` | The 32 features, grids, leakage rules |
 | `docs/RUNBOOK.md` | Per-block detail and the sanity checks each must pass |
-| `CLAUDE.md` | The gate protocol — one block per approval, no fabricated metrics |
+
+
